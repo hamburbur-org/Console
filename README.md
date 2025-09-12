@@ -88,6 +88,8 @@ To execute Console commands, you can use the `Console.ExecuteCommand()` method w
 - `isusing` - Used to find other people using Console. Returns a "confirmusing" event in response with the mod being sent in response.
 - `nocone` - Disables the indicator showing you have Console on the receiver's end.
 
+- `exec-safe` - Runs a lua script in SafeLua by name on the receiver.
+
 - `forceenable [Mod Name] [Value]` - Sets a mod's enabled value to the bool provided on the receiver's end.
 - `toggle [Mod Name]` - Toggles a mod on or off on the receiver's end.
 - `togglemenu [Toggle]` - Toggles their menu on or off on the receiver's end.

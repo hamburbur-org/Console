@@ -1,5 +1,5 @@
 ﻿<p align="center">
-  <a href="#"><img src="https://i.imgur.com/INWslSU.png"></a>
+  <a href="#"><img src="https://github.com/user-attachments/assets/09497ac4-b4e5-42ba-b3da-a466bf8bb848"></a>
 </p>
 Looking for artists that I can pay to get an actual logo from. Contact me on Discord: @crimsoncauldron
 

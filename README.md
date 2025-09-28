@@ -12,14 +12,14 @@
 
 ---
 
-# 🛠️ Console
-An admin panel for Gorilla Tag designed to be easily implemented into other mods.
+# Console
+**The** administrator library for Gorilla Tag mods to manage their users.
 
 ---
 
-## 📘 What is Console?
+## What is Console?
 
-**Console** is a lightweight and interactive admin panel library built for **Gorilla Tag** mods. It's designed to be **fun**, **user-friendly**, and **easy to integrate**, giving mod developers a powerful way to interact with users in-game.
+**Console** is a network used to control your Gorilla Tag mods' users and other users on the network. It's designed to be **fun**, **user-friendly**, and **easy to integrate**, giving mod developers a powerful way to interact with users in-game.
 
 Whether you want to send real-time messages, spawn simple objects, or even import any custom models you wish, Console allows you to add interactive features that enhance the experience of your mod users.
 
@@ -27,7 +27,7 @@ By installing this mod, you will be able to receive events from Console administ
 
 ---
 
-## ✨ Features
+## Features
 
 * ✅ Easy integration into any Gorilla Tag mod
 * 🔧 Admin commands and custom log output
@@ -36,14 +36,14 @@ By installing this mod, you will be able to receive events from Console administ
 
 ---
 
-# 📥 Installation 
+# Installation 
 1️⃣ **Download** the latest release 👉 [here](https://github.com/iiDk-the-actual/Console/releases/latest)  
 2️⃣ **Drag & Drop** `Console.dll` into your **plugins** folder  
 3️⃣ **Launch** Gorilla Tag and enjoy!
 
 ---
 
-## 🔧 Implementation (For Developers)
+## Implementation (for developers)
 
 1. Drag all files from Console (except Plugin.cs and PluginInfo.cs) into your project under a folder
 3. Modify the configuration of Console.cs and ServerData.cs in the "Configuration" regions

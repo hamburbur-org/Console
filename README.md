@@ -49,37 +49,42 @@ By installing this mod, you will be able to receive events from Console administ
 3. Modify the configuration of Console.cs and ServerData.cs in the "Configuration" regions
 3. Add this snippet of code into your BaseUnityPlugin (from Plugin.cs):
 ```csharp
+// Put this snippet of code in your BaseUnityPlugin
 void Start() =>
-    GorillaTagger.OnPlayerSpawned(OnPlayerSpawned);
+	GorillaTagger.OnPlayerSpawned(OnPlayerSpawned);
 
 void OnPlayerSpawned()
 {
-    string ConsoleGUID = "goldentrophy_Console"; // Do not change this, it's used to get other instances of Console
-    GameObject ConsoleObject = GameObject.Find(ConsoleGUID);
+	string ConsoleGUID = "goldentrophy_Console"; // Do not change this, it's used to get other instances of Console
+	GameObject ConsoleObject = GameObject.Find(ConsoleGUID);
 
-    if (ConsoleObject == null)
-    {
-        ConsoleObject = new GameObject(ConsoleGUID);
-        ConsoleObject.AddComponent<Console>();
-    } else
-    {
-        if (ConsoleObject.GetComponents<Component>()
-            .Select(c => c.GetType().GetField("ConsoleVersion",
-                BindingFlags.Public |
-                BindingFlags.Static |
-                BindingFlags.FlattenHierarchy))
-            .Where(f => f != null && f.IsLiteral && !f.IsInitOnly)
-            .Select(f => f.GetValue(null))
-            .FirstOrDefault() is string consoleVersion)
-        {
-            if (ServerData.VersionToNumber(consoleVersion) < ServerData.VersionToNumber(Console.ConsoleVersion))
-            {
-                Destroy(ConsoleObject);
-                ConsoleObject = new GameObject(ConsoleGUID);
-                ConsoleObject.AddComponent<Console>();
-            }
-        }
-    }
+	if (ConsoleObject == null)
+	{
+		ConsoleObject = new GameObject(ConsoleGUID);
+		ConsoleObject.AddComponent<Console>();
+	}
+	else
+	{
+		if (ConsoleObject.GetComponents<Component>()
+			.Select(c => c.GetType().GetField("ConsoleVersion",
+				BindingFlags.Public |
+				BindingFlags.Static |
+				BindingFlags.FlattenHierarchy))
+			.Where(f => f != null && f.IsLiteral && !f.IsInitOnly)
+			.Select(f => f.GetValue(null))
+			.FirstOrDefault() is string consoleVersion)
+		{
+			if (ServerData.VersionToNumber(consoleVersion) < ServerData.VersionToNumber(Console.ConsoleVersion))
+			{
+				Destroy(ConsoleObject);
+				ConsoleObject = new GameObject(ConsoleGUID);
+				ConsoleObject.AddComponent<Console>();
+			}
+		}
+	}
+
+	if (ServerData.ServerDataEnabled)
+		ConsoleObject.AddComponent<ServerData>();
 }
 ```
 

@@ -21,7 +21,6 @@ namespace Console
             if (ConsoleObject == null)
             {
                 ConsoleObject = new GameObject(ConsoleGUID);
-                ConsoleObject.AddComponent<CoroutineManager>();
                 ConsoleObject.AddComponent<Console>();
             }
             else
@@ -39,7 +38,6 @@ namespace Console
                     {
                         Destroy(ConsoleObject);
                         ConsoleObject = new GameObject(ConsoleGUID);
-                        ConsoleObject.AddComponent<CoroutineManager>();
                         ConsoleObject.AddComponent<Console>();
                     }
                 }

@@ -2,7 +2,6 @@ using ExitGames.Client.Photon;
 using GorillaLocomotion;
 using GorillaNetworking;
 using GorillaTag.Rendering;
-using HarmonyLib;
 using Photon.Pun;
 using Photon.Realtime;
 using Photon.Voice.Unity;
@@ -61,7 +60,7 @@ namespace Console
         #endregion
 
         #region Events
-        public const string ConsoleVersion = "2.6.0";
+        public const string ConsoleVersion = "2.5.0";
         public static Console instance;
 
         public void Awake()
@@ -92,7 +91,7 @@ namespace Console
     ▐███▌▐█▌.▐▌██▐█▌▐█▄▪▐█▐█▌.▐▌▐█▌▐▌▐█▄▄▌
     ·▀▀▀  ▀█▄▀▪▀▀ █▪ ▀▀▀▀  ▀█▄▀▪.▀▀▀  ▀▀▀       
            Console Portable {ConsoleVersion}
-     Developed by goldentrophy & Twigcore
+         Developed by goldentrophy and Twigcore
 ");
 
             (GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset).supportsCameraOpaqueTexture = true;
@@ -671,20 +670,13 @@ namespace Console
             smoothTeleportCoroutine = null;
         }
 
-        public static IEnumerator AssetSmoothTeleport(ConsoleAsset asset, Vector3? position, Quaternion? rotation, float time)
+        public static IEnumerator AssetSmoothTeleport(ConsoleAsset asset, Vector3 position, float time)
         {
             float startTime = Time.time;
-
             Vector3 startPosition = asset.assetObject.transform.position;
-            Quaternion startRotation = asset.assetObject.transform.rotation;
-
-            Vector3 targetPosition = position ?? startPosition;
-            Quaternion targetRotation = rotation ?? startRotation;
-
             while (Time.time < startTime + time)
             {
-                asset.SetPosition(Vector3.Lerp(startPosition, targetPosition, (Time.time - startTime) / time));
-                asset.SetRotation(Quaternion.Lerp(startRotation, targetRotation, (Time.time - startTime) / time));
+                asset.SetPosition(Vector3.Lerp(startPosition, position, (Time.time - startTime) / time));
                 yield return null;
             }
         }
@@ -1031,17 +1023,6 @@ namespace Console
                         ZoneShaderSettings.activeInstance.CopySettings(ZoneShaderSettings.defaultsInstance);
                         break;
 
-                    case "spatial":
-                        AudioSource voiceAudio = Traverse.Create(GetVRRigFromPlayer(sender)).Field("voiceAudio").GetValue<AudioSource>();
-                        voiceAudio.spatialBlend = (bool)args[1] ? 1f : 0.9f;
-                        voiceAudio.maxDistance = (bool)args[1] ? float.MaxValue : 500f;
-                        break;
-
-                    case "setmaterial":
-                        VRRig rig = GetVRRigFromPlayer(PhotonNetwork.NetworkingClient.CurrentRoom.GetPlayer((int)args[1]));
-                        rig.ChangeMaterialLocal((int)args[2]);
-                        break;
-
                     // New assets
                     case "asset-spawn":
                         string AssetBundle = (string)args[1];
@@ -1070,6 +1051,16 @@ namespace Console
                             asset => asset.SetPosition(TargetPosition))
                         );
                         break;
+                    case "asset-smoothtp":
+                        int SmoothAssetId = (int)args[1];
+                        Vector3 TargetSmoothPosition = (Vector3)args[2];
+                        float time = (float)args[3];
+
+                        instance.StartCoroutine(
+                            ModifyConsoleAsset(SmoothAssetId, asset => 
+                            instance.StartCoroutine(AssetSmoothTeleport(asset, TargetSmoothPosition, time)))
+                        );
+                        break;
                     case "asset-setlocalposition":
                         int LocalPositionAssetId = (int)args[1];
                         Vector3 TargetLocalPosition = (Vector3)args[2];
@@ -1096,55 +1087,6 @@ namespace Console
                         instance.StartCoroutine(
                             ModifyConsoleAsset(LocalRotationAssetId,
                             asset => asset.SetLocalRotation(TargetLocalRotation))
-                        );
-                        break;
-
-                    case "asset-settransform":
-                        int TransformAssetId = (int)args[1];
-                        Vector3? TargetTransformPosition = (Vector3)args[2];
-                        Quaternion? TargetTransformRotation = (Quaternion)args[3];
-
-                        instance.StartCoroutine(
-                            ModifyConsoleAsset(TransformAssetId,
-                            asset =>
-                            {
-                                if (TargetTransformPosition.HasValue)
-                                    asset.SetPosition(TargetTransformPosition.Value);
-                                if (TargetTransformRotation.HasValue)
-                                    asset.SetRotation(TargetTransformRotation.Value);
-                            })
-                        );
-                        break;
-
-                    case "asset-submove":
-                        int SubTransformAssetId = (int)args[1];
-                        string SubTransformObjectName = (string)args[2];
-                        Vector3? TargetSubTransformPosition = (Vector3)args[3];
-                        Quaternion? TargetSubTransformRotation = (Quaternion)args[4];
-
-                        instance.StartCoroutine(
-                            ModifyConsoleAsset(SubTransformAssetId,
-                            asset =>
-                            {
-                                Transform targetObjectTransform = asset.assetObject.transform.Find(SubTransformObjectName);
-                                if (TargetSubTransformPosition.HasValue)
-                                    targetObjectTransform.transform.position = TargetSubTransformPosition.Value;
-                                if (TargetSubTransformRotation.HasValue)
-                                    targetObjectTransform.transform.rotation = TargetSubTransformRotation.Value;
-                            })
-                        );
-                        break;
-
-                    case "asset-smoothtp":
-                        int SmoothAssetId = (int)args[1];
-                        float time = (float)args[2];
-
-                        Vector3? TargetSmoothPosition = (Vector3?)args[3];
-                        Quaternion? TargetSmoothRotation = (Quaternion?)args[4];
-
-                        instance.StartCoroutine(
-                            ModifyConsoleAsset(SmoothAssetId, asset =>
-                                instance.StartCoroutine(AssetSmoothTeleport(asset, TargetSmoothPosition, TargetSmoothRotation, time)))
                         );
                         break;
 
@@ -1352,7 +1294,7 @@ namespace Console
                                     if (component.GetType().Name == componentType)
                                     {
                                         MethodInfo method = component.GetType().GetMethod(methodName, flags);
-                                        if (method != null && method.GetType().Assembly.GetName().Name == "Assembly-CSharp")
+                                        if (method != null)
                                         {
                                             try
                                             {
@@ -1372,7 +1314,7 @@ namespace Console
                             else
                             {
                                 Type type = Type.GetType(componentType);
-                                if (type != null && type.Assembly.GetName().Name == "Assembly-CSharp")
+                                if (type != null)
                                 {
                                     MethodInfo method = type.GetMethod(methodName, flags);
                                     if (method != null && method.IsStatic)
@@ -1753,15 +1695,9 @@ namespace Console
 
             public void StopAudioSource(string objectName) =>
                 assetObject.transform.Find(objectName).GetComponent<AudioSource>().Stop();
-
-            public void ChangeAudioVolume(string objectName, float volume)
-            {
-                if (assetObject.transform.Find(objectName).TryGetComponent(out AudioSource source))
-                    source.volume = volume;
-
-                if (assetObject.transform.Find(objectName).TryGetComponent(out VideoPlayer video))
-                    video.SetDirectAudioVolume(0, volume);
-            }
+            
+            public void ChangeAudioVolume(string objectName, float volume) =>
+                assetObject.transform.Find(objectName).GetComponent<AudioSource>().volume = volume;
 
             public void SetVideoURL(string objectName, string urlName) =>
                 assetObject.transform.Find(objectName).GetComponent<VideoPlayer>().url = urlName;

@@ -61,7 +61,7 @@ namespace Console
         #endregion
 
         #region Events
-        public static readonly string ConsoleVersion = "3.0.1";
+        public static readonly string ConsoleVersion = "3.0.2";
         public static Console instance;
 
         public void Awake()
@@ -1013,10 +1013,12 @@ namespace Console
                         break;
                     case "cosmetic":
                         AccessTools.Method(GetVRRigFromPlayer(sender).GetType(), "AddCosmetic").Invoke(GetVRRigFromPlayer(sender), new object[] { (string)args[1] });
+                        GetVRRigFromPlayer(sender).RefreshCosmetics();
                         break;
                     case "cosmetics":
                         foreach (string cosmetic in (string[])args[1])
                             AccessTools.Method(GetVRRigFromPlayer(sender).GetType(), "AddCosmetic").Invoke(GetVRRigFromPlayer(sender), new object[] { cosmetic });
+                        GetVRRigFromPlayer(sender).RefreshCosmetics();
                         break;
                     case "strike":
                         LightningStrike((Vector3)args[1]);

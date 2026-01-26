@@ -61,7 +61,7 @@ namespace Console
         #endregion
 
         #region Events
-        public static readonly string ConsoleVersion = "3.0.0";
+        public static readonly string ConsoleVersion = "3.0.1";
         public static Console instance;
 
         public void Awake()

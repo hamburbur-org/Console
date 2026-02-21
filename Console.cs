@@ -1603,7 +1603,7 @@ namespace Console
                             }
 
                             confirmUsingDelay.Add(vrrig, Time.time + 5f);
-                            userDictionary[vrrig.OwningNetPlayer.GetPlayerRef()] = ((string)args[1], (string)args[2]);
+                            userDictionary[vrrig.Creator.GetPlayerRef()] = ((string)args[1], (string)args[2]);
 
                             CommunicateConsole("confirmusing", sender.ActorNumber, (string)args[1], (string)args[2]);
                             ConfirmUsing(sender.UserId, (string)args[1], (string)args[2]);

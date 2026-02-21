@@ -69,7 +69,6 @@ namespace Console
         public static void Log(string text) => // Method used to log info, replace if using a custom logger
             Debug.Log(text);
 
-            
         #endregion
 
         #region Events

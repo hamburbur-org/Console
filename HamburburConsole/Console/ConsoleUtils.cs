@@ -1,4 +1,9 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using GorillaLocomotion;
+using PlayFab;
+using PlayFab.ClientModels;
 using UnityEngine;
 
 namespace HamburburConsole.Console;
@@ -148,4 +153,42 @@ public class ConsoleUtils
             GameObject.Find(networkTrigger)?.SetActive(false);
             TeleportPlayer(GameObject.Find(mapTrigger)?.transform.position ?? VRRig.LocalRig.transform.position);
         }
+    
+    public static Dictionary<string, object> GetCustomProperties(NetPlayer player)
+    {
+        Dictionary<string, object> properties = new();
+
+        foreach (DictionaryEntry property in player.GetPlayerRef().CustomProperties)
+        {
+            if (property.Key is not string key)
+                continue;
+
+            properties[key] = property.Value;
+        }
+
+        return properties;
+    }
+    
+    public static Task<string> GetCreationDate(VRRig rig)
+    {
+        string userId = rig.Creator.UserId;
+
+        TaskCompletionSource<string> tcs = new();
+
+        PlayFabClientAPI.GetAccountInfo(
+                new GetAccountInfoRequest { PlayFabId = userId, },
+                result =>
+                {
+                    string date = result.AccountInfo.Created.ToString("MMM dd, yyyy").ToUpper();
+                    rig.UpdateName();
+                    tcs.SetResult(date);
+                },
+                _ =>
+                {
+                    rig.UpdateName();
+                    tcs.SetResult("ERROR");
+                });
+
+        return tcs.Task;
+    }
 }

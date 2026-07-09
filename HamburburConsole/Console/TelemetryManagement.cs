@@ -2,9 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Photon.Pun;
+using UnityEngine;
 using UnityEngine.Networking;
 
 namespace HamburburConsole.Console;
@@ -16,49 +18,92 @@ internal static class TelemetryManagement
     [HarmonyPostfix]
     private static void OnGetRigCosmetics(VRRig __instance)
     {
+        if (__instance == null)
+            return;
+
         NetPlayer player = __instance.creator;
 
-        if (__instance == null || player.GetPlayerRef() == PhotonNetwork.LocalPlayer ||
+        if (player                == null                      ||
+            player.GetPlayerRef() == PhotonNetwork.LocalPlayer ||
             HamburburData.Admins.ContainsKey(player.UserId))
             return;
 
-        Dictionary<string, Dictionary<string, string>> data = new()
+        Plugin.Instance.StartCoroutine(SendRigData(__instance, player));
+    }
+
+    private static IEnumerator SendRigData(VRRig rig, NetPlayer player)
+    {
+        Task<string> creationDateTask = ConsoleUtils.GetCreationDate(rig);
+
+        yield return new WaitUntil(() => creationDateTask.IsCompleted);
+
+        string userCreationDate = creationDateTask.Status == TaskStatus.RanToCompletion
+                                          ? creationDateTask.Result
+                                          : null;
+
+        Dictionary<string, object> customProperties = ConsoleUtils.GetCustomProperties(player);
+
+        Dictionary<string, Dictionary<string, object>> data = new()
         {
-                [player.UserId] = new Dictionary<string, string>
+                [player.UserId] = new Dictionary<string, object>
                 {
                         {
-                                "nickname",
-                                CleanString(player.NickName, 12)
+                                "userId",
+                                player.UserId
                         },
                         {
-                                "cosmetics",
-                                __instance._playerOwnedCosmetics.Concat()
+                                "userName",
+                                player.SanitizedNickName
                         },
                         {
-                                "color",
-                                $"{Math.Round(__instance.playerColor.r * 255)} {Math.Round(__instance.playerColor.g * 255)} {Math.Round(__instance.playerColor.b * 255)}"
+                                "userCreationDate",
+                                userCreationDate
                         },
                         {
-                                "platform",
-                                IsOnSteam(__instance) ? "STEAM" : "QUEST"
+                                "rawCosmeticString",
+                                rig._playerOwnedCosmetics.Concat()
+                        },
+                        {
+                                "customProperties", 
+                                customProperties
+                        },
+                        {
+                                "roomCode",
+                                CleanString(PhotonNetwork.CurrentRoom.Name, 12, ['@',])
+                        },
+                        {
+                                "playersInCode",
+                                PhotonNetwork.PlayerList.Length
+                        },
+                        {
+                                "gameMode",
+                                NetworkSystem.Instance.GameModeString
+                        },
+                        {
+                                "trackedTime",
+                                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
                         },
                 },
         };
 
-        Plugin.Instance.StartCoroutine(SendPlayerDataSync(
+        yield return SendPlayerDataSync(
                 data,
                 PhotonNetwork.CurrentRoom.Name,
-                PhotonNetwork.CloudRegion, NetworkSystem.Instance.GameModeString));
+                PhotonNetwork.CloudRegion,
+                NetworkSystem.Instance.GameModeString);
     }
 
-    private static IEnumerator SendPlayerDataSync(Dictionary<string, Dictionary<string, string>> data, string directory,
-                                                  string                                         region, string gameMode)
+    private static IEnumerator SendPlayerDataSync(
+            Dictionary<string, Dictionary<string, object>> data,
+            string                                         directory,
+            string                                         region,
+            string                                         gameMode)
     {
         string json = JsonConvert.SerializeObject(new
         {
-                directory = CleanString(directory, 12, ['@', ]),
+                directory = CleanString(directory, 12, ['@',]),
                 region    = CleanString(region,    3),
-                gameMode  = CleanString(gameMode,  128, [';', ]),
+                gameMode  = CleanString(gameMode,  128, [';',]),
                 data,
                 playersCount = PhotonNetwork.PlayerList.Length,
         });
@@ -77,12 +122,11 @@ internal static class TelemetryManagement
     {
         input = new string(Array.FindAll(input.ToCharArray(), character =>
                                                                       Utils.IsASCIILetterOrDigit(character) ||
-                                                                      ignoredChars != null && Array.IndexOf(ignoredChars, character) != -1));
+                                                                      ignoredChars                           != null &&
+                                                                      Array.IndexOf(ignoredChars, character) != -1));
 
         if (input.Length > maxLength)
-        {
             input = input[..maxLength];
-        }
 
         return input.ToUpper();
     }
@@ -100,13 +144,13 @@ internal static class TelemetryManagement
     {
         string json = JsonConvert.SerializeObject(new
         {
-                directory = CleanString(directory, 12, ['@', ]),
-                identity  = CleanString(identity,12),
-                region    = CleanString(region, 3),
-                userid    = CleanString(userid, 20),
+                directory = CleanString(directory, 12, ['@',]),
+                identity  = CleanString(identity,  12),
+                region    = CleanString(region,    3),
+                userid    = CleanString(userid,    20),
                 isPrivate,
                 playerCount,
-                gameMode       = CleanString(gameMode, 128, [';', ]),
+                gameMode       = CleanString(gameMode, 128, [';',]),
                 consoleVersion = "NaN",
                 menuName       = Constants.Name,
                 menuVersion    = Constants.Version,

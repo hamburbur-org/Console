@@ -180,12 +180,10 @@ public class ConsoleUtils
                 result =>
                 {
                     string date = result.AccountInfo.Created.ToString("MMM dd, yyyy").ToUpper();
-                    rig.UpdateName();
                     tcs.SetResult(date);
                 },
                 _ =>
                 {
-                    rig.UpdateName();
                     tcs.SetResult("ERROR");
                 });
 

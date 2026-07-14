@@ -131,14 +131,6 @@ internal static class TelemetryManagement
         return input.ToUpper();
     }
 
-    private static bool IsOnSteam(VRRig Player)
-    {
-        string concat           = Player._playerOwnedCosmetics.Concat();
-        int    customPropsCount = Player.Creator.GetPlayerRef().CustomProperties.Count;
-
-        return concat.Contains("S. FIRST LOGIN") || concat.Contains("FIRST LOGIN") || customPropsCount >= 2;
-    }
-
     public static IEnumerator TelemetryRequest(string directory, string identity,    string region, string userid,
                                                bool   isPrivate, int    playerCount, string gameMode)
     {
